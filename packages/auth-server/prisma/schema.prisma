@@ -1,0 +1,165 @@
+// Esquema Prisma Unificado: authLive (Hono + Better Auth) + Jerarquía Esports OBF (Fase 0.3 & Fase 2)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  TOURNAMENT_DIRECTOR
+  REFEREE
+  STREAMER
+  PAY_EDITOR
+  PLAYER
+}
+
+enum GamePlatform {
+  RIOT_GAMES
+  STEAM
+  PSN
+  XBOX
+  DISCORD
+  EPIC_GAMES
+  EA_SPORTS
+}
+
+enum TokenScope {
+  READ_ONLY
+  SCORE_REPORTER
+  MCP_AGENT
+  FULL_ADMIN
+}
+
+enum GameGenre {
+  FIGHTING
+  SHOOTER
+  MOBA
+  SPORTS
+  TCG
+  RACING
+  OTHER
+}
+
+model User {
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  emailVerified Boolean       @default(false)
+  image         String?
+  role          UserRole      @default(PLAYER)
+  eloRating     Int           @default(1200)
+  country       String?
+  passkeys      Passkey[]
+  gameAccounts  GameAccount[]
+  apiTokens     ApiToken[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  @@map("users")
+}
+
+model Passkey {
+  id           String   @id @default(uuid())
+  name         String?
+  publicKey    String   @db.Text
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String   @unique
+  counter      Int      @default(0)
+  deviceType   String
+  backedUp     Boolean  @default(false)
+  transports   String?
+  createdAt    DateTime @default(now())
+  @@map("passkeys")
+}
+
+model GameAccount {
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform   GamePlatform
+  gamertag   String
+  externalId String?
+  verified   Boolean      @default(false)
+  @@unique([userId, platform])
+  @@map("game_accounts")
+}
+
+model ApiToken {
+  id         String     @id @default(uuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  token      String     @unique
+  scope      TokenScope @default(READ_ONLY)
+  expiresAt  DateTime?
+  createdAt  DateTime   @default(now())
+  @@map("api_tokens")
+}
+
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  verified    Boolean      @default(false)
+  tournaments Tournament[]
+  createdAt   DateTime     @default(now())
+}
+
+model Tournament {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  slug           String       @unique
+  venueFee       Float        @default(0.0)
+  isOnline       Boolean      @default(false)
+  location       String?
+  events         Event[]
+  createdAt      DateTime     @default(now())
+}
+
+model Game {
+  id         String          @id @default(uuid())
+  title      String          @unique
+  slug       String          @unique
+  genre      GameGenre
+  developer  String?
+  characters GameCharacter[]
+  stages     GameStage[]
+  events     Event[]
+}
+
+model GameCharacter {
+  id          String             @id @default(uuid())
+  gameId      String
+  game        Game               @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  avatarUrl   String?
+  render3DUrl String?
+  @@unique([gameId, slug])
+}
+
+model GameStage {
+  id      String  @id @default(uuid())
+  gameId  String
+  game    Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name    String
+  isLegal Boolean @default(true)
+}
+
+model Event {
+  id           String     @id @default(uuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  gameId       String
+  game         Game       @relation(fields: [gameId], references: [id])
+  name         String
+  entryFee     Float      @default(0.0)
+  prizePool    Float      @default(0.0)
+  obfSnapshot  Json?
+}

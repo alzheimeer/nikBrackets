@@ -1,0 +1,7 @@
+{
+  "name": "@nexus-grid/lan-offline-cache",
+  "version": "2026.2.0",
+  "type": "module",
+  "main": "src/lan-server.ts",
+  "description": "Servidor Local de Contingencia LAN (Offline-First) inspirado en local-cache-for-startgg para eventos presenciales, compatible con Replay Reporter y Auto Stream"
+}

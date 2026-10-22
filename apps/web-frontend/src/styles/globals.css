@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+:root {
+  --bg-obsidian: #070A0F;
+  --bg-slate: #111723;
+  --border-slate: #1E293B;
+  --neon-cyan: #00F0FF;
+  --neon-crimson: #FF0055;
+  --neon-purple: #8A2BE2;
+  --neon-gold: #F59E0B;
+  --text-ice: #F8FAFC;
+  --text-muted: #94A3B8;
+}
+
+body {
+  background-color: var(--bg-obsidian);
+  color: var(--text-ice);
+  font-family: 'Inter', sans-serif;
+}

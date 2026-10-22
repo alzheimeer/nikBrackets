@@ -1,0 +1,15 @@
+{
+  "name": "@nexus-grid/bracket-viewer-3d",
+  "version": "2026.2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "description": "Visualizador universal 3D WebGL (React 19 + React Three Fiber en espacio Z) y 2D SVG híbrido compatible con Open Bracket Format (OBF v1.0)",
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.172.0",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/drei": "^10.0.0"
+  }
+}

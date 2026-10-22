@@ -1,0 +1,18 @@
+{
+  "name": "@nexus-grid/web-frontend",
+  "version": "2026.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplicación Frontend React 19 + React Three Fiber (R3F) + Zustand + Tailwind CSS v4 (Cyber-Esports Glassmorphism)",
+  "dependencies": {
+    "@nexus-grid/bracket-engine": "workspace:*",
+    "@nexus-grid/bracket-viewer-3d": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.172.0",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/drei": "^10.0.0",
+    "zustand": "^5.0.3",
+    "lucide-react": "^0.475.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "nexus-grid-3d-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma de Gestión de Esports 2026: Motor de 7 Formatos (OBF), Visualizador 3D WebGL (React Three Fiber), Auth Hexagonal (authLive), Aceleración Redis/BullMQ, Caché LAN Offline y Servidor MCP con DeepSeek-VL/R1.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "start": "node scripts/dev-stack.mjs",
+    "dev": "node scripts/dev-stack.mjs",
+    "test": "node --test packages/bracket-engine/tests/engine.test.mjs",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@nexus-grid/auth-server",
+  "version": "2026.2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "description": "Microservicio independiente de autenticación basado en alzheimeer/authLive (Hono + Better Auth + Passkeys/WebAuthn + OAuth2 Gaming + Hexagonal Ports & Adapters + Upstash Redis)",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "better-auth": "^1.2.0",
+    "@prisma/client": "^6.3.0",
+    "@upstash/redis": "^1.34.3"
+  }
+}

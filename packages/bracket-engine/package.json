@@ -1,0 +1,11 @@
+{
+  "name": "@nexus-grid/bracket-engine",
+  "version": "2026.2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "description": "Motor matemático de brackets con 7 formatos, reseteo en cascada y soporte nativo Open Bracket Format (OBF v1.0)",
+  "scripts": {
+    "test": "node tests/engine.test.mjs"
+  }
+}

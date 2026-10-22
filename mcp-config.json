@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "nexus-grid-esports-2026": {
+      "command": "/opt/homebrew/bin/node",
+      "args": [
+        "/Users/niklauss/Desktop/Start.gg/nexus-grid-3d-monorepo/scripts/mcp-stdio-server.mjs"
+      ],
+      "env": {
+        "NEXUS_API_URL": "http://127.0.0.1:4000",
+        "NEXUS_AUTH_URL": "http://127.0.0.1:4001",
+        "NEXUS_LAN_URL": "http://127.0.0.1:4002"
+      }
+    }
+  }
+}

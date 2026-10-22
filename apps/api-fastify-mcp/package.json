@@ -1,0 +1,20 @@
+{
+  "name": "@nexus-grid/api-fastify-mcp",
+  "version": "2026.2.0",
+  "type": "module",
+  "main": "src/server.ts",
+  "description": "Backend Core en Fastify + Prisma PostgreSQL + Aceleración Redis (Read-Aside, Write-Behind BullMQ <5ms, RedisJSON OBF) + DeepSeek IA + Servidor MCP Nativo",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "mcp": "tsx src/mcp-server.ts"
+  },
+  "dependencies": {
+    "@nexus-grid/bracket-engine": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "@prisma/client": "^6.3.0",
+    "fastify": "^5.2.0",
+    "@fastify/redis": "^7.0.0",
+    "ioredis": "^5.5.0",
+    "bullmq": "^5.40.0"
+  }
+}

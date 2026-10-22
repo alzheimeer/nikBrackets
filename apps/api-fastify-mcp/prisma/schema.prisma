@@ -1,0 +1,206 @@
+// apps/api-fastify-mcp/prisma/schema.prisma
+// Esquema de Datos Prisma Integral para Fase 1, Fase 2 y Fase 3:
+// Jerarquía (Organization ➔ Tournament ➔ Event), Juegos/Personajes/Escenarios, Sets OBF y Verificación DeepSeek-VL
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  REFEREE
+  TREASURER
+}
+
+enum GameGenre {
+  FIGHTING
+  SHOOTER
+  MOBA
+  SPORTS
+  TCG
+  RACING
+  OTHER
+}
+
+enum TournamentFormat {
+  TWO_STAGE
+  DOUBLE_ELIMINATION
+  SINGLE_ELIMINATION
+  SWISS
+  ROUND_ROBIN
+  FREE_FOR_ALL
+  LEADERBOARD
+}
+
+enum RequireProofMode {
+  ALWAYS
+  ON_DISPUTE_ONLY
+  NEVER
+}
+
+enum SetStatus {
+  LOCKED
+  WAITING
+  READY
+  IN_PROGRESS
+  REPORTED_PARTIAL
+  DISPUTED
+  COMPLETED
+  ARCHIVED
+}
+
+// 1. JERARQUÍA: ORGANIZACIÓN ➔ TORNEO ➔ EVENTO (estilo start.gg & Challonge)
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  logoUrl     String?
+  bannerUrl   String?
+  verified    Boolean      @default(false)
+  members     OrgMember[]
+  tournaments Tournament[]
+  createdAt   DateTime     @default(now())
+}
+
+model OrgMember {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  role           OrgRole      @default(ADMIN)
+}
+
+model Tournament {
+  id               String       @id @default(uuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name             String       // Ej: "EVO 2026"
+  slug             String       @unique
+  venueFee         Float        @default(0.0)
+  isOnline         Boolean      @default(false)
+  location         String?
+  registrationLock String       @default("PUBLIC") // PUBLIC, PASSWORD, PRIVATE_LINK
+  events           Event[]
+  createdAt        DateTime     @default(now())
+}
+
+// 2. CATÁLOGO DE JUEGOS, PERSONAJES (MAINS) Y ESCENARIOS LEGALES
+model Game {
+  id            String          @id @default(uuid())
+  title         String          @unique // Ej: "Tekken 8", "Street Fighter 6", "2XKO"
+  slug          String          @unique
+  genre         GameGenre
+  coverImageUrl String?
+  bannerUrl     String?
+  developer     String?
+  characters    GameCharacter[]
+  stages        GameStage[]
+  events        Event[]
+  createdAt     DateTime        @default(now())
+}
+
+model GameCharacter {
+  id             String             @id @default(uuid())
+  gameId         String
+  game           Game               @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name           String             // Ej: "Sergei Dragunov", "Kazuya Mishima", "Juri"
+  slug           String
+  avatarUrl      String?
+  render3DUrl    String?
+  p1Selections   SetGameSelection[] @relation("P1Character")
+  p2Selections   SetGameSelection[] @relation("P2Character")
+
+  @@unique([gameId, slug])
+}
+
+model GameStage {
+  id             String             @id @default(uuid())
+  gameId         String
+  game           Game               @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name           String             // Ej: "Yakushima", "Final Destination"
+  imageUrl       String?
+  isLegal        Boolean            @default(true)
+  gameSelections SetGameSelection[]
+}
+
+// 3. EVENTO / DISCIPLINA Y ETAPAS DEL BRACKET (ESTÁNDAR OBF)
+model Event {
+  id                  String           @id @default(uuid())
+  tournamentId        String
+  tournament          Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  gameId              String
+  game                Game             @relation(fields: [gameId], references: [id])
+  name                String           // Ej: "Tekken 8 - Singles 1v1"
+  format              TournamentFormat @default(TWO_STAGE)
+  minMatchesPerPlayer Int              @default(3)
+  requireProofMode    RequireProofMode @default(ON_DISPUTE_ONLY)
+  entryFee            Float            @default(0.0)
+  prizePool           Float            @default(0.0)
+  obfSnapshotJson     Json?            // Snapshot completo en formato Open Bracket Format (OBF v1.0)
+  aiSeedingData       Json?            // Metadatos calculados por DeepSeek-R1
+  stages              Stage[]
+  createdAt           DateTime         @default(now())
+}
+
+model Stage {
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name    String // Ej: "Fase 1: Clasificación Suiza", "Fase 2: Playoffs Doble Eliminación"
+  order   Int
+  sets    Set[]
+}
+
+// 4. SETS, PARTIDAS INDIVIDUALES Y VERIFICACIÓN MULTIMODAL POR IA (DEEPSEEK-VL)
+model Set {
+  id             String             @id @default(uuid())
+  stageId        String
+  stage          Stage              @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  round          Int
+  identifier     String             // Ej: "SW-R1-1", "W-FIN"
+  state          SetStatus          @default(READY)
+  player1Id      String?
+  player2Id      String?
+  score1         Int                @default(0)
+  score2         Int                @default(0)
+  winnerId       String?
+  station        String?
+  isStream       Boolean            @default(false)
+  gameSelections SetGameSelection[]
+  aiVerification AIVerification?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+model SetGameSelection {
+  id           String         @id @default(uuid())
+  setId        String
+  set          Set            @relation(fields: [setId], references: [id], onDelete: Cascade)
+  gameNumber   Int
+  character1Id String?
+  character1   GameCharacter? @relation("P1Character", fields: [character1Id], references: [id])
+  character2Id String?
+  character2   GameCharacter? @relation("P2Character", fields: [character2Id], references: [id])
+  stageId      String?
+  stage        GameStage?     @relation(fields: [stageId], references: [id])
+  winnerId     String?
+}
+
+model AIVerification {
+  id              String   @id @default(uuid())
+  setId           String   @unique
+  set             Set      @relation(fields: [setId], references: [id], onDelete: Cascade)
+  modelUsed       String   @default("deepseek-vl-vision")
+  detectedScore1  Int?
+  detectedScore2  Int?
+  confidenceScore Float
+  aiDecision      String   // "AUTO_APPROVED" | "REQUIRES_HUMAN_REFEREE"
+  rawAnalysisJson Json
+  createdAt       DateTime @default(now())
+}
